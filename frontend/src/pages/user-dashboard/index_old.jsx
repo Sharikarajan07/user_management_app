@@ -9,12 +9,15 @@ import SearchToolbar from './components/SearchToolbar';
 import Pagination from './components/Pagination';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import Toast from './components/Toast';
+import apiService from '../../services/apiService';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
 
-  // Mock user data
-  const [users, setUsers] = useState([
+  // State management
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
     {
       id: 1,
       username: "john_doe",

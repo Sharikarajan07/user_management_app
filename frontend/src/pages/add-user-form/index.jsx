@@ -5,6 +5,7 @@ import FormHeader from './components/FormHeader';
 import UserFormFields from './components/UserFormFields';
 import FormActions from './components/FormActions';
 import ToastNotification from './components/ToastNotification';
+import apiService from '../../services/apiService';
 
 const AddUserForm = () => {
   const navigate = useNavigate();
@@ -105,40 +106,44 @@ const AddUserForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Create new user object
-      const newUser = {
-        id: Date.now(),
+      // Create user via API
+      const userData = {
         username: formData?.username?.trim(),
         fullName: formData?.fullName?.trim(),
         email: formData?.email?.trim()?.toLowerCase(),
         phoneNumber: formData?.phoneNumber?.trim(),
-        location: formData?.location?.trim(),
-        createdTime: new Date()?.toISOString()
+        location: formData?.location?.trim()
       };
 
-      // Store in localStorage for persistence across pages
-      const existingUsers = JSON.parse(localStorage.getItem('userManagementUsers') || '[]');
-      const updatedUsers = [...existingUsers, newUser];
-      localStorage.setItem('userManagementUsers', JSON.stringify(updatedUsers));
+      const response = await apiService.createUser(userData);
 
-      setToast({
-        isVisible: true,
-        message: 'User created successfully!',
-        type: 'success'
-      });
+      if (response.success) {
+        setToast({
+          isVisible: true,
+          message: 'User created successfully!',
+          type: 'success'
+        });
 
-      // Navigate back to dashboard after short delay
-      setTimeout(() => {
-        navigate('/user-dashboard');
-      }, 2000);
+        // Navigate back to dashboard after short delay
+        setTimeout(() => {
+          navigate('/user-dashboard');
+        }, 2000);
+      }
 
     } catch (error) {
+      console.error('Failed to create user:', error);
+      let errorMessage = 'Failed to create user. Please try again.';
+      
+      // Handle specific error cases
+      if (error.message.includes('already exists')) {
+        errorMessage = 'Username or email already exists. Please use different values.';
+      } else if (error.message.includes('Validation')) {
+        errorMessage = 'Please check your input and try again.';
+      }
+
       setToast({
         isVisible: true,
-        message: 'Failed to create user. Please try again.',
+        message: errorMessage,
         type: 'error'
       });
     } finally {

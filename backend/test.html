@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Backend API Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test health endpoint
+                console.log('Testing health endpoint...');
+                const healthResponse = await fetch('http://localhost:5000/api/v1/health');
+                const healthData = await healthResponse.json();
+                results.innerHTML += '<h3>Health Check:</h3><pre>' + JSON.stringify(healthData, null, 2) + '</pre>';
+                
+                // Test users endpoint
+                console.log('Testing users endpoint...');
+                const usersResponse = await fetch('http://localhost:5000/api/v1/users');
+                const usersData = await usersResponse.json();
+                results.innerHTML += '<h3>Users:</h3><pre>' + JSON.stringify(usersData, null, 2) + '</pre>';
+                
+            } catch (error) {
+                results.innerHTML += '<h3>Error:</h3><pre>' + error.message + '</pre>';
+                console.error('Test failed:', error);
+            }
+        }
+        
+        // Run test when page loads
+        window.onload = testAPI;
+    </script>
+</body>
+</html>

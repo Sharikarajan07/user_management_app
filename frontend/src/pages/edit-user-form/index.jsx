@@ -6,6 +6,7 @@ import EditUserFormFields from './components/EditUserFormFields';
 import EditUserFormValidation from './components/EditUserFormValidation';
 import EditUserFormActions from './components/EditUserFormActions';
 import EditUserFormToast from './components/EditUserFormToast';
+import apiService from '../../services/apiService';
 
 const EditUserForm = () => {
   const navigate = useNavigate();
@@ -154,34 +155,46 @@ const EditUserForm = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Update user via API
+      const userData = {
+        username: formData?.username?.trim(),
+        fullName: formData?.fullName?.trim(),
+        email: formData?.email?.trim()?.toLowerCase(),
+        phoneNumber: formData?.phoneNumber?.trim(),
+        location: formData?.location?.trim()
+      };
 
-      // Show success toast
-      setToast({
-        show: true,
-        type: 'success',
-        message: 'User updated successfully!'
-      });
+      const response = await apiService.updateUser(userToEdit?.id, userData);
 
-      // Navigate back to dashboard after a short delay
-      setTimeout(() => {
-        navigate('/user-dashboard', {
-          state: {
-            updatedUser: {
-              ...userToEdit,
-              ...formData,
-              updatedTime: new Date()
-            }
-          }
+      if (response.success) {
+        // Show success toast
+        setToast({
+          show: true,
+          type: 'success',
+          message: 'User updated successfully!'
         });
-      }, 2000);
+
+        // Navigate back to dashboard after a short delay
+        setTimeout(() => {
+          navigate('/user-dashboard');
+        }, 2000);
+      }
 
     } catch (error) {
+      console.error('Failed to update user:', error);
+      let errorMessage = 'Failed to update user. Please try again.';
+      
+      // Handle specific error cases
+      if (error.message.includes('already exists')) {
+        errorMessage = 'Username or email already exists. Please use different values.';
+      } else if (error.message.includes('not found')) {
+        errorMessage = 'User not found. Please refresh and try again.';
+      }
+
       setToast({
         show: true,
         type: 'error',
-        message: 'Failed to update user. Please try again.'
+        message: errorMessage
       });
     } finally {
       setIsLoading(false);
